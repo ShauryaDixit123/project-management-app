@@ -127,5 +127,5 @@ model TeamMember {
     teamIdId Team @relation(fields: [teamId], references: [id])
     userIdId  User @relation(fields: [userId], references: [id])
 
-    @@index([teamId])
+    
 }

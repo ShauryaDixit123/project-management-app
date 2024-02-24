@@ -12,6 +12,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { UserDaos } from "../daos/user";
+import { allowedURLs } from "../validations/user";
 
 /**
  * 1. CONTEXT
@@ -21,32 +23,24 @@ import { db } from "~/server/db";
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 
-type CreateContextOptions = Record<string, never>;
-
-/**
- * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
- * it from here.
- *
- * Examples of things you may need it for:
- * - testing, so we don't have to mock Next.js' req/res
- * - tRPC's `createSSGHelpers`, where we don't have req/res
- *
- * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
- */
-const createInnerTRPCContext = (_opts: CreateContextOptions) => {
+export const createTRPCContext = (opts: CreateNextContextOptions) => {
+  const { req } = opts;
+  if (!req.cookies.token) {
+    return allowedURLs.includes(req.url ?? "")
+      ? {
+          db,
+        }
+      : {
+          status: 401,
+          error: "Unauthorized",
+        };
+  }
+  const us = new UserDaos();
+  const user = us.getByToken(req.cookies.token);
   return {
     db,
+    user,
   };
-};
-
-/**
- * This is the actual context you will use in your router. It will be used to process every request
- * that goes through your tRPC endpoint.
- *
- * @see https://trpc.io/docs/context
- */
-export const createTRPCContext = (_opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({});
 };
 
 /**
@@ -84,7 +78,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
  * @see https://trpc.io/docs/router
  */
 export const createTRPCRouter = t.router;
-
+export const createCallerFactory = t.createCallerFactory;
 /**
  * Public (unauthenticated) procedure
  *
