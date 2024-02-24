@@ -7,11 +7,8 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
 import { TRPCError } from "@trpc/server";
 import { createTRPCContext } from "../../server/api/trpc";
-import { UserDaos } from "../../server/daos/user";
+import { createCaller } from "~/server/api/root";
 import { Prisma } from "@prisma/client";
-import { userValidation } from "../../server/validations/user";
-import { api } from "~/utils/api";
-import { appRouter, createCaller } from "~/server/api/root";
 
 const testHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const ctx = createTRPCContext({ req, res });
@@ -20,11 +17,12 @@ const testHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     const body: Prisma.UserCreateInput = req.body;
     const resp = await caller.user.createAdmin({
       email: body.email,
-      name: body.name ?? "",
       password: body.password,
+      name: body.name ?? "",
     });
     res.status(200).json(resp);
   } catch (cause) {
+    console.log(cause, "xzczxcxzc");
     if (cause instanceof TRPCError) {
       const httpCode = getHTTPStatusCodeFromError(cause);
       return res.status(httpCode).json(cause);

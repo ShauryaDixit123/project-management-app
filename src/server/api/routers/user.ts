@@ -7,6 +7,7 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { UserDaos } from "~/server/daos/user";
 import { hashPassword, userValidation } from "~/server/validations/user";
 import bcrypt from "bcrypt";
+import { z } from "zod";
 
 export const userRouter = createTRPCRouter({
   ping: publicProcedure.query(() => {
@@ -14,10 +15,15 @@ export const userRouter = createTRPCRouter({
   }),
   createAdmin: publicProcedure
     .input(userValidation)
-    .mutation(async ({ ctx, input }) => {
-      const us = new UserDaos();
+    .query(async ({ ctx, input }) => {
+      const us = new UserDaos(ctx.db);
       const hshPwd = hashPassword(input.password);
-      const ad = await us.create({ ...input, password: hshPwd, isAdmin: true });
+      const ad = await us.create({
+        ...input,
+        password: hshPwd,
+        isAdmin: true,
+        isIn: true,
+      });
       const tm = await us.createTeam({
         name: `${input.name}'s Team 1`,
         adminIdId: {
@@ -31,13 +37,13 @@ export const userRouter = createTRPCRouter({
           },
         },
       });
-      return { user: { ...ad, password: "" }, team: tm };
+      return { user: ad, team: tm };
     }),
 
   signIn: publicProcedure
     .input(userValidation)
     .mutation(async ({ ctx, input }) => {
-      const us = new UserDaos();
+      const us = new UserDaos(ctx.db);
       const ud = await us.getByEmail(input.email);
       if (!ud) {
         throw new Error("User not found");
@@ -50,6 +56,38 @@ export const userRouter = createTRPCRouter({
           throw new Error("Invalid password");
         }
       });
+      await us.changeUserStatus(ud.id, true);
       return { user: { ...ud, password: "" } };
+    }),
+  addMemberToTeam: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        teamId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const us = new UserDaos(ctx.db);
+      let ud = await us.getByEmail(input.email);
+      if (!ud) {
+        const hshPwd = hashPassword("password");
+        ud = await us.create({
+          email: input.email,
+          password: hshPwd,
+        });
+      }
+      await us.addToTeam({
+        teamIdId: {
+          connect: {
+            id: input.teamId,
+          },
+        },
+        userIdId: {
+          connect: {
+            id: ud?.id,
+          },
+        },
+      });
+      return { user: ud };
     }),
 });

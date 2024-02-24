@@ -60,6 +60,7 @@ model Story {
 
     TeamIdId Team @relation(fields: [teamId], references: [id])
     CreatedById User @relation(fields: [createdBy], references: [id])
+    Task        Task[]
 
     @@index([teamId])
 }
@@ -74,13 +75,14 @@ model Task {
     des       String?
     stage     String
     priority  String
-
+    storyId    String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     TaskActivity TaskActivity[]
     assigneeId User @relation("taskAssignee_Id",fields: [assignee], references: [id])
     reporterId User @relation("taskReporter_Id",fields: [reporter], references: [id])
+    storyIdId   Story? @relation(fields: [storyId], references: [id])
 
     @@index([stage])
 }
@@ -126,6 +128,4 @@ model TeamMember {
 
     teamIdId Team @relation(fields: [teamId], references: [id])
     userIdId  User @relation(fields: [userId], references: [id])
-
-    
 }
