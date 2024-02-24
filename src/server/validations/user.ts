@@ -7,7 +7,7 @@ import * as bcrpt from "bcrypt";
 export const userValidation = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  name: z.string(),
+  name: z.string().nullable(),
 });
 
 export const allowedURLs = [

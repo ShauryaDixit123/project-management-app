@@ -16,7 +16,7 @@ export const userRouter = createTRPCRouter({
   createAdmin: publicProcedure
     .input(userValidation)
     .query(async ({ ctx, input }) => {
-      const us = new UserDaos(ctx.db);
+      const us = new UserDaos();
       const hshPwd = hashPassword(input.password);
       const ad = await us.create({
         ...input,
@@ -43,7 +43,7 @@ export const userRouter = createTRPCRouter({
   signIn: publicProcedure
     .input(userValidation)
     .mutation(async ({ ctx, input }) => {
-      const us = new UserDaos(ctx.db);
+      const us = new UserDaos();
       const ud = await us.getByEmail(input.email);
       if (!ud) {
         throw new Error("User not found");
@@ -57,7 +57,7 @@ export const userRouter = createTRPCRouter({
         }
       });
       await us.changeUserStatus(ud.id, true);
-      return { user: { ...ud, password: "" } };
+      return { user: { ...ud, isIn: true, password: "" } };
     }),
   addMemberToTeam: publicProcedure
     .input(
@@ -67,7 +67,7 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const us = new UserDaos(ctx.db);
+      const us = new UserDaos();
       let ud = await us.getByEmail(input.email);
       if (!ud) {
         const hshPwd = hashPassword("password");

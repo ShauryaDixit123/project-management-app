@@ -13,12 +13,23 @@ import { Prisma } from "@prisma/client";
 const testHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const ctx = createTRPCContext({ req, res });
   const caller = createCaller(ctx);
+  // let dd: Date = new Date();
   try {
-    const body: Prisma.UserCreateInput = req.body;
-    const resp = await caller.user.createAdmin({
-      email: body.email,
-      password: body.password,
-      name: body.name ?? "",
+    const body = req.body;
+    // if (typeof body.dueDate === "string") {
+    //   dd = new Date(body.dueDate); // Convert string to Date
+    // } else {
+    //   dd = body.dueDate; // Already a Date, no conversion necessary
+    // }
+    const resp = await caller.task.createStory({
+      id: undefined,
+      dueDate: new Date(body.dueDate as string),
+      title: body.title,
+      des: body.des ?? undefined, // Ensure this is not null
+      stage: body.stage,
+      priority: body.priority,
+      teamId: body.teamId, // Add this
+      createdBy: body.createdBy,
     });
     res.status(200).json(resp);
   } catch (cause) {
