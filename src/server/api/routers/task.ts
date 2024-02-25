@@ -4,9 +4,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { UserDaos } from "~/server/daos/user";
-import { hashPassword, userValidation } from "~/server/validations/user";
-import bcrypt from "bcrypt";
 import {
   storyUpsertValidation,
   taskFetchValidation,

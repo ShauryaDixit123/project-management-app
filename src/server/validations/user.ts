@@ -8,6 +8,7 @@ export const userValidation = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().nullable(),
+  mob: z.string().optional(),
 });
 
 export const allowedURLs = [

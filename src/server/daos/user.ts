@@ -34,4 +34,21 @@ export class UserDaos {
   async getTeamById(id: string): Promise<Team | null> {
     return await dbClient.team.findFirst({ where: { id } });
   }
+  async getTeamsByUserId(userId: string): Promise<Team[]> {
+    return await dbClient.team.findMany({
+      where: { TeamMembers: { some: { userId } } },
+    });
+  }
+  async getUserDetailsByToken(tkn: string) {
+    return await dbClient.user.findFirst({
+      where: { token: tkn },
+      include: {
+        TeamMembers: {
+          include: {
+            teamIdId: true,
+          },
+        },
+      },
+    });
+  }
 }

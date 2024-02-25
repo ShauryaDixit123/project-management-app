@@ -15,7 +15,8 @@ export const userRouter = createTRPCRouter({
   }),
   createAdmin: publicProcedure
     .input(userValidation)
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      console.log(input, "input");
       const us = new UserDaos();
       const hshPwd = hashPassword(input.password);
       const ad = await us.create({
@@ -23,6 +24,7 @@ export const userRouter = createTRPCRouter({
         password: hshPwd,
         isAdmin: true,
         isIn: true,
+        mob: input.mob ?? "",
       });
       const tm = await us.createTeam({
         name: `${input.name}'s Team 1`,
@@ -37,7 +39,7 @@ export const userRouter = createTRPCRouter({
           },
         },
       });
-      return { user: ad, team: tm };
+      return { user: { ...ad, password: "" }, team: tm };
     }),
 
   signIn: publicProcedure
@@ -89,5 +91,18 @@ export const userRouter = createTRPCRouter({
         },
       });
       return { user: ud };
+    }),
+  getTeamsByUserId: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const us = new UserDaos();
+      return await us.getTeamsByUserId(input.userId);
+    }),
+
+  getUserDetailsByToken: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const us = new UserDaos();
+      return await us.getUserDetailsByToken(input.token);
     }),
 });

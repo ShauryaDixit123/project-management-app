@@ -14,6 +14,8 @@ import { ZodError } from "zod";
 import { db } from "~/server/db";
 import { UserDaos } from "../daos/user";
 import { allowedURLs } from "../validations/user";
+import { createTRPCReact } from "@trpc/react-query";
+import { AppRouter } from "./root";
 
 /**
  * 1. CONTEXT
@@ -22,6 +24,7 @@ import { allowedURLs } from "../validations/user";
  *
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
+export const trpc = createTRPCReact<AppRouter>();
 
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts;
