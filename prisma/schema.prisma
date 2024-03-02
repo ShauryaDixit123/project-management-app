@@ -39,7 +39,8 @@ model User {
     TeamAdmin Team[]
     TeamMembers TeamMember[]
     TaskActivity TaskActivity[]
-    Story Story[]
+    StoryCreatedBy Story[]      @relation("storyCreatedBy_Id")
+    StoryReporter Story[]      @relation("storyReporter_Id")
 
     @@index([token])
 
@@ -53,13 +54,16 @@ model Story {
     stage     String
     priority  String
     teamId String
-    createdBy String
+    createdBy String       
+    reporter String?        
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     TeamIdId Team @relation(fields: [teamId], references: [id])
-    CreatedById User @relation(fields: [createdBy], references: [id])
+    CreatedById User @relation("storyCreatedBy_Id",fields: [createdBy], references: [id])
+    ReporterId User? @relation("storyReporter_Id",fields: [reporter], references: [id])
+
     Task        Task[]
 
     @@index([teamId])

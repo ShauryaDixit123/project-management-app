@@ -1,13 +1,28 @@
 import { Button, DatePicker, Flex, Form, Input, Modal, Select } from "antd";
 import TextArea from "antd/es/input/TextArea";
+import dayjs, { Dayjs } from "dayjs";
 import React, { FC } from "react";
 import {
   TYPE_OF_ISSUE,
   TYPE_OF_PRIORITY,
   TYPE_OF_STATUS,
 } from "~/constants/stage";
+import { api } from "~/utils/api";
 
-const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
+type listType = {
+  label: string | null;
+  value: string;
+  key: number;
+}[];
+
+const CreateTaskModal: FC<{
+  uid: string;
+  userList: listType;
+  storyList: listType;
+  children: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onFinish: (values: any) => void;
+}> = ({ uid, userList, children, storyList, onFinish }) => {
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const { TextArea } = Input;
   const [form] = Form.useForm();
@@ -15,6 +30,7 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
     TYPE_OF_ISSUE?.[0]?.value ?? "",
   );
   console.log(form.getFieldsValue(), "sadsa");
+
   return (
     <>
       <span onClick={() => setIsModalVisible(!isModalVisible)}>{children}</span>
@@ -29,6 +45,8 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
         <Form
           onFinish={(values) => {
             console.log(values, "valallala");
+            onFinish(values);
+            setIsModalVisible(false);
           }}
           className="h-[450px] w-[600px] bg-white"
         >
@@ -43,6 +61,11 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
                   Type of Issue<span style={{ color: "red" }}>*</span>{" "}
                 </label>
                 <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
                   initialValue={TYPE_OF_ISSUE?.[0]?.value}
                   name="typeOfIssue"
                   className="mb-0 "
@@ -59,10 +82,34 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
               </Flex>
               <Flex vertical justify="center">
                 <label className="text-[16px]">
+                  Title<span style={{ color: "red" }}>*</span>{" "}
+                </label>
+                <Form.Item
+                  name="title"
+                  className="mb-0 "
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input className="mt-2" />
+                </Form.Item>
+              </Flex>
+              <Flex vertical justify="center">
+                <label className="text-[16px]">
                   Due Date
                   <span style={{ color: "red" }}>*</span>{" "}
                 </label>
-                <Form.Item name="dueDate" className="mb-0 ">
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                  name="dueDate"
+                  className="mb-0 "
+                >
                   <DatePicker className="mt-2 w-full" />
                 </Form.Item>
               </Flex>
@@ -72,17 +119,19 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
                   <Flex vertical justify="center">
                     <label className="text-[16px]">Story</label>
                     <Form.Item name="story" className="mb-0 ">
-                      <Select className="mt-2" />
+                      <Select options={storyList} className="mt-2" />
                     </Form.Item>
                   </Flex>
                 </>
               )}
               <Flex vertical justify="center">
-                <label className="text-[16px]">
-                  Priority
-                  <span style={{ color: "red" }}>*</span>{" "}
-                </label>
+                <label className="text-[16px]">Priority</label>
                 <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
                   initialValue={TYPE_OF_PRIORITY?.[0]?.value}
                   name="priority"
                   className="mb-0 "
@@ -95,10 +144,7 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Form.Item>
               </Flex>
               <Flex vertical justify="center">
-                <label className="text-[16px]">
-                  Status
-                  <span style={{ color: "red" }}>*</span>{" "}
-                </label>
+                <label className="text-[16px]">Status</label>
                 <Form.Item
                   initialValue={TYPE_OF_STATUS?.[0]?.value}
                   name="status"
@@ -118,8 +164,21 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
                   Assignee
                   <span style={{ color: "red" }}>*</span>{" "}
                 </label>
-                <Form.Item name="assignee" className="mb-0 ">
-                  <Select className="mt-2" />
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                  initialValue={userList[0]}
+                  name="assignee"
+                  className="mb-0 "
+                >
+                  <Select
+                    defaultValue={userList[0]}
+                    options={userList}
+                    className="mt-2"
+                  />
                 </Form.Item>
               </Flex>
               <Flex vertical justify="center">
@@ -127,8 +186,23 @@ const CreateTaskModal: FC<{ children: React.ReactNode }> = ({ children }) => {
                   Reporter
                   <span style={{ color: "red" }}>*</span>{" "}
                 </label>
-                <Form.Item name="reporter" className="mb-0 ">
-                  <Select className="mt-2" />
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                  initialValue={userList.filter((val) => val.value === uid)[0]}
+                  name="reporter"
+                  className="mb-0 "
+                >
+                  <Select
+                    defaultValue={
+                      userList.filter((val) => val.value === uid)[0]
+                    }
+                    options={userList}
+                    className="mt-2"
+                  />
                 </Form.Item>
               </Flex>
             </Flex>

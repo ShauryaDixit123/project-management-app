@@ -32,11 +32,27 @@ export class UserDaos {
     return await dbClient.teamMember.create({ data });
   }
   async getTeamById(id: string): Promise<Team | null> {
-    return await dbClient.team.findFirst({ where: { id } });
+    return await dbClient.team.findFirst({
+      where: { id },
+      include: {
+        TeamMembers: {
+          include: {
+            userIdId: true,
+          },
+        },
+      },
+    });
   }
   async getTeamsByUserId(userId: string): Promise<Team[]> {
     return await dbClient.team.findMany({
       where: { TeamMembers: { some: { userId } } },
+      include: {
+        TeamMembers: {
+          include: {
+            userIdId: true,
+          },
+        },
+      },
     });
   }
   async getUserDetailsByToken(tkn: string) {
@@ -46,9 +62,21 @@ export class UserDaos {
         TeamMembers: {
           include: {
             teamIdId: true,
+            userIdId: true,
           },
         },
       },
     });
+  }
+  getUsersByTeamId(params: { id: string }) {
+    return dbClient.teamMember.findMany({
+      where: { teamId: params.id },
+      include: {
+        userIdId: true,
+      },
+    });
+  }
+  getTeamsByAdminId(params: { adminId: string }) {
+    return dbClient.team.findMany({ where: { adminId: params.adminId } });
   }
 }

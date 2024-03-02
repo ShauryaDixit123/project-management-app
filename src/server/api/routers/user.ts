@@ -76,6 +76,7 @@ export const userRouter = createTRPCRouter({
         ud = await us.create({
           email: input.email,
           password: hshPwd,
+          isAdmin: false,
         });
       }
       await us.addToTeam({
@@ -104,5 +105,32 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const us = new UserDaos();
       return await us.getUserDetailsByToken(input.token);
+    }),
+  getTeamMembers: publicProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const us = new UserDaos();
+      return await us.getTeamById(input.teamId);
+    }),
+  getTeamsByAdminId: publicProcedure
+    .input(z.object({ adminId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const us = new UserDaos();
+      return await us.getTeamsByAdminId({
+        adminId: input.adminId,
+      });
+    }),
+  createTeam: publicProcedure
+    .input(z.object({ name: z.string(), adminId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const us = new UserDaos();
+      return await us.createTeam({
+        name: input.name,
+        adminIdId: {
+          connect: {
+            id: input.adminId,
+          },
+        },
+      });
     }),
 });

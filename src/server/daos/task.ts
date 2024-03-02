@@ -42,4 +42,38 @@ export class TaskDaos {
   getTasksByStoryId(params: { id: string }) {
     return dbClient.task.findMany({ where: { storyId: params.id } });
   }
+  getTasksByUserId(params: { id: string }) {
+    return dbClient.task.findMany({
+      where: { assignee: params.id },
+      include: {
+        reporterId: true,
+        assigneeId: true,
+      },
+    });
+  }
+  // getItemsByTeamId(params: { id: string }) {
+  //   return dbClient.task.findMany({ where: { teamId: params.id } });
+  // }
+  getTasksByTeamId(params: { id: string }) {
+    return dbClient.team.findMany({
+      where: { id: params.id },
+      include: {
+        TeamMembers: {
+          include: {
+            userIdId: true,
+          },
+        },
+      },
+    });
+  }
+  getTeamMembersByTeamId(params: { id: string }) {
+    return dbClient.teamMember.findMany({
+      where: {
+        teamId: params.id,
+        userIdId: {
+          isAdmin: true,
+        },
+      },
+    });
+  }
 }

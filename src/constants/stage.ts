@@ -68,8 +68,8 @@ export const TYPE_OF_STATUS = [
 ];
 
 export const SIDE_NAV_ITEMS: (
-  onClick: (key: string) => void,
-) => MenuProps["items"] = (onClick: (key: string) => void) => [
+  onClick?: (key: string) => void,
+) => MenuProps["items"] = (onClick?: (key: string) => void) => [
   {
     key: 1,
     icon: React.createElement(UserOutlined),
@@ -86,33 +86,33 @@ export const SIDE_NAV_ITEMS: (
         label: `Tasks`,
         icon: React.createElement(LaptopOutlined),
       },
-      {
-        key: `1.3`,
-        label: `Backlogs`,
-        icon: React.createElement(NotificationOutlined),
-      },
     ],
   },
   {
     key: 2,
     icon: React.createElement(UserOutlined),
-    label: `Quick Tasks`,
-  },
-  {
-    key: 3,
-    icon: React.createElement(UserOutlined),
     label: `Team and Profile`,
     children: [
       {
-        key: `3.1`,
-        label: `Manage Team`,
+        key: `2.1`,
+        label: `Invite to Team`,
         icon: React.createElement(UserOutlined),
       },
       {
-        key: `3.2`,
+        key: `2.2`,
         label: `Profile`,
         icon: React.createElement(NotificationOutlined),
       },
     ],
+  },
+  {
+    key: 3,
+    icon: React.createElement(UserOutlined),
+    label: `Logout`,
+    onClick: () => {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("ut");
+      }
+    },
   },
 ];
