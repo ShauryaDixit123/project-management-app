@@ -176,7 +176,7 @@ export const InviteModal: FC<{
       title={<h1 className="text-[30px]">Invite</h1>}
     >
       <Form
-        onFinish={(val) => {
+        onFinish={(val: { email: string }) => {
           console.log(val, "valvalval");
           submitInvite.mutate({ email: val.email, teamId: teamId });
         }}

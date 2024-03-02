@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 import { useRouter as useRouterOld } from "next/router";
 import Sidebar from "~/components/blocks/sidebar";
 import RenderTaskUnit from "~/components/blocks/task-blocks";
+import { Prisma, Task } from "@prisma/client";
 
 const { Content, Sider } = Layout;
 
@@ -44,10 +45,12 @@ const App: React.FC = () => {
   const [currentActive, setCurrentActive] = React.useState<string>(
     (routerO.query.tab as string) ?? "1.2",
   );
-  const [currentTasks, setCurrentTasks] = React.useState();
+  const [currentTasks, setCurrentTasks] = React.useState<
+    Record<string, Task[]>
+  >({});
   const [openInviteModal, setOpenInviteModal] = React.useState<boolean>(false);
   const [createTeamModal, setCreateTeamModal] = React.useState<boolean>(false);
-  let token = null;
+  let token: string | null = null;
   if (typeof window !== "undefined") {
     token = localStorage.getItem("ut");
   }
@@ -92,13 +95,16 @@ const App: React.FC = () => {
       name: userD.data?.TeamMembers?.[0]?.teamIdId.name ?? "",
     });
     console.log(teamTasks.data, "userD.data");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion
     setCurrentTasks(teamTasks.data);
   }, [userD.data]);
   console.log(currentTasks, "currentActive");
   useEffect(() => {
     if (routerO.query.tab === "1.1") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion
       setCurrentTasks(storiesByTeam);
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion
       setCurrentTasks(teamTasks.data);
     }
   }, [currentActive, routerO.query.tab, storiesByTeam]);
@@ -126,7 +132,7 @@ const App: React.FC = () => {
             <Flex gap={20} justify="space-between">
               <CreateTaskModal
                 uid={userD.data?.id ?? ""}
-                onFinish={(values) => {
+                onFinish={async (values) => {
                   console.log(values, "values");
                   handleSubmitTask(
                     values,
@@ -137,7 +143,8 @@ const App: React.FC = () => {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     (payload) => createTask(payload),
                   );
-                  const tsks = teamTasks.refetch();
+                  const tsks = await teamTasks.refetch();
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion
                   setCurrentTasks(tsks.data);
                 }}
                 storyList={
@@ -181,6 +188,7 @@ const App: React.FC = () => {
                       });
                       router.push(`/dashboard?tid=${val.value}`);
                       const tres = await teamTasks.refetch();
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion
                       setCurrentTasks(tres.data);
                     }}
                   >
@@ -206,11 +214,12 @@ const App: React.FC = () => {
               {TYPE_OF_STATUS.map((stg, j) => {
                 if (Object.keys(currentTasks ?? {}).includes(stg.value)) {
                   const taskByStg = currentTasks?.[stg.value]?.map(
-                    (task, i) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (task: any, i: number) => {
                       // const day = new dayjs(task.dueDate).format("DD/MM/YYYY"
-                      const dueDate = dayjs(task.dueDate as string).format(
-                        "DD/MM/YYYY",
-                      );
+                      const dueDate = dayjs(
+                        task.dueDate as unknown as string,
+                      ).format("DD/MM/YYYY");
 
                       return (
                         <RenderTaskUnit
@@ -239,7 +248,9 @@ const App: React.FC = () => {
                         align="center"
                         className=" h-full overflow-y-scroll"
                       >
-                        <div className="h-full">{...taskByStg}</div>
+                        <div className="h-full">
+                          {taskByStg ? [...taskByStg] : []}
+                        </div>
                       </Flex>
                     </div>
                   );

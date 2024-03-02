@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { InteractionFilled } from "@ant-design/icons";
 import { Dropdown, Flex, MenuProps, Popover, notification } from "antd";
@@ -45,7 +46,8 @@ const RenderTaskUnit = (props: {
           onClick={(ele) => {
             updateTask({
               id: task.id,
-              stage: ele.key as string,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              stage: ele?.key as string,
             });
             console.log(ele, "elexzcxzc");
           }}

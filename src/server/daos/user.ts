@@ -31,7 +31,7 @@ export class UserDaos {
   async addToTeam(data: Prisma.TeamMemberCreateInput) {
     return await dbClient.teamMember.create({ data });
   }
-  async getTeamById(id: string): Promise<Team | null> {
+  async getTeamById(id: string) {
     return await dbClient.team.findFirst({
       where: { id },
       include: {
