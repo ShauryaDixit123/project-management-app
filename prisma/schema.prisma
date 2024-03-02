@@ -13,6 +13,7 @@ datasource db {
 model Post {
     id        Int      @id @default(autoincrement())
     name      String
+    
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -27,8 +28,108 @@ model User {
     password String
     mob   String?
     isAdmin Boolean @default(false)
+    isIn    Boolean  @default(false)
+    token   String     @default(uuid()) @unique
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+    TaskAssignee Task[]     @relation("taskAssignee_Id")
+    TaskReporter Task[]     @relation("taskReporter_Id")
+    TeamAdmin Team[]
+    TeamMembers TeamMember[]
+    TaskActivity TaskActivity[]
+    StoryCreatedBy Story[]      @relation("storyCreatedBy_Id")
+    StoryReporter Story[]      @relation("storyReporter_Id")
+
+    @@index([token])
+
+}
+
+model Story {
+    id     String        @id @default(uuid())
+    dueDate   DateTime           
+    title     String
+    des       String?
+    stage     String
+    priority  String
+    teamId String
+    createdBy String       
+    reporter String?        
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    TeamIdId Team @relation(fields: [teamId], references: [id])
+    CreatedById User @relation("storyCreatedBy_Id",fields: [createdBy], references: [id])
+    ReporterId User? @relation("storyReporter_Id",fields: [reporter], references: [id])
+
+    Task        Task[]
+
+    @@index([teamId])
+}
+
+
+model Task {
+    id      String        @id @default(uuid())
+    dueDate   DateTime     
+    assignee  String      
+    reporter  String        
+    title     String
+    des       String?
+    stage     String
+    priority  String
+    storyId    String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    TaskActivity TaskActivity[]
+    assigneeId User @relation("taskAssignee_Id",fields: [assignee], references: [id])
+    reporterId User @relation("taskReporter_Id",fields: [reporter], references: [id])
+    storyIdId   Story? @relation(fields: [storyId], references: [id])
+
+    @@index([stage])
+}
+
+model Team {
+    id  String  @id @default(uuid())
+    adminId String
+    name    String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    adminIdId User @relation(fields: [adminId], references: [id])
+    TeamMembers TeamMember[]
+    Story Story[]
+
+    @@index([adminId])
+}
+
+model TaskActivity {
+    id      String        @id @default(uuid())
+    taskId  String
+    userId  String
+    action  String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    taskIdId Task @relation(fields: [taskId], references: [id])
+    userIdId  User @relation(fields: [userId], references: [id])
+
+    @@index([taskId])
+
+}
+
+model TeamMember {
+    id      String        @id @default(uuid())
+    teamId  String
+    userId  String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    teamIdId Team @relation(fields: [teamId], references: [id])
+    userIdId  User @relation(fields: [userId], references: [id])
 }
