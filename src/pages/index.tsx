@@ -258,6 +258,11 @@ const App: React.FC = () => {
                             email: task.assigneeId?.email,
                           }}
                           key={i}
+                          callBack={async (ele) => {
+                            const tres = await teamTasks.refetch();
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion
+                            setCurrentTasks(tres.data);
+                          }}
                         />
                       );
                     },
