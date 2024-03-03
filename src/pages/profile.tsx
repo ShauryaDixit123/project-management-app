@@ -1,8 +1,9 @@
 import { EditFilled } from "@ant-design/icons";
-import { Image, Layout } from "antd";
+import { Button, Flex, Form, Image, Input, Layout, notification } from "antd";
+import FormItemLabel from "antd/es/form/FormItemLabel";
 import { Content } from "antd/es/layout/layout";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
 import Sidebar from "~/components/blocks/sidebar";
 import Briefcase from "~/components/icons/briefcase";
 import Peoples from "~/components/icons/people";
@@ -11,7 +12,7 @@ import OnboardModal from "~/components/users/onboard";
 import { api } from "~/utils/api";
 
 const Profile = () => {
-  const tkn = typeof window !== "undefined" ? localStorage.getItem("ut") : null;
+  const tkn = typeof window !== "undefined" ? localStorage.getItem("ut") : "";
   const router = useRouter();
   const tmId = router.query.tid;
   const ud = api.user.getUserDetailsByToken.useQuery({
@@ -23,7 +24,23 @@ const Profile = () => {
   const utmbm = api.user.getTeamMembers.useQuery({
     teamId: tmId as string,
   }).data;
-  const [openEditModal, setOpenEditModal] = React.useState<boolean>(false);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     tkn = localStorage.getItem("ut");
+  //   }
+  // }, []);
+  const { mutate: mutateUser } = api.user.updateUser.useMutation({
+    onSuccess: (data) => {
+      console.log(data, "data324234");
+      notification.success({
+        message: "User updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.log(error, "error");
+    },
+  });
+  const [openEditFlow, setOpenEditFlow] = React.useState<boolean>(false);
   console.log(ud, tms, utmbm, "ud.data");
   return (
     <Layout className="h-[100vh]">
@@ -41,36 +58,81 @@ const Profile = () => {
                     alt="Woman looking front"
                   />
                 </div>
-                <EditFilled onClick={() => setOpenEditModal(!openEditModal)} />
-                <OnboardModal open={openEditModal} />
-                <div className="mt-8 text-center">
-                  <h2 className="font-semibold">{ud?.name}</h2>
-                  <p className="text-gray-500">{ud?.email}</p>
-                  <p className="text-gray-500">{ud?.mob}</p>
+                <EditFilled onClick={() => setOpenEditFlow(!openEditFlow)} />
+                {openEditFlow ? (
+                  <div className="text-[20px]">Edit Details</div>
+                ) : null}
+                <Form
+                  onFinish={(val: {
+                    name: string;
+                    email: string;
+                    mob: string;
+                  }) => (
+                    console.log(val, "xzcxzxz"),
+                    mutateUser({
+                      ...val,
+                      id: ud!.id,
+                    })
+                  )}
+                  className="mt-8 text-center"
+                >
+                  {openEditFlow ? (
+                    <Flex justify="start" vertical align="start">
+                      <label>Name here</label>
+                      <Form.Item name="name">
+                        <Input defaultValue={ud?.name ?? ""} />
+                      </Form.Item>
+                    </Flex>
+                  ) : (
+                    <h2 className="font-semibold">{ud?.name}</h2>
+                  )}
+                  {openEditFlow ? (
+                    <Flex justify="start" vertical align="start">
+                      <label>Email</label>
+                      <Form.Item initialValue={ud?.email} name="email">
+                        <Input type="email" defaultValue={ud?.email ?? ""} />
+                      </Form.Item>
+                    </Flex>
+                  ) : (
+                    <p className="text-gray-500">{ud?.email}</p>
+                  )}
+                  {openEditFlow ? (
+                    <Flex justify="start" vertical align="start">
+                      <label>Mob</label>
+                      <Form.Item name="mob">
+                        <Input defaultValue={ud?.mob ?? ""} />
+                      </Form.Item>
+                    </Flex>
+                  ) : (
+                    <p className="text-gray-500">{ud?.mob}</p>
+                  )}
+
                   <p className="text-gray-500">
                     {ud?.isAdmin ? "You admin" : "You are a member"}
                   </p>
-                </div>
+                  {openEditFlow && <Button htmlType="submit">Save</Button>}
+                </Form>
                 <ul className="mt-2 flex min-w-max flex-col items-center justify-around py-4 text-gray-700">
-                  {ud?.isAdmin && (
+                  {ud?.isAdmin ? (
                     <li className="flex min-w-[140px] items-center justify-around">
                       Admin for:
-                      <div className="flex gap-2">
+                      <span className="flex gap-2">
                         {tms?.length}
                         <Star />
-                      </div>{" "}
+                      </span>{" "}
                       team
-                      {/* {`${tms?.length > 1 ? "s" : ""}`} */}
                     </li>
+                  ) : (
+                    <li></li>
                   )}
                   <li className="flex flex-col items-center justify-between">
-                    <li className="flex min-w-[140px] items-center justify-around">
-                      team
+                    <span className="flex min-w-[140px] items-center justify-around">
+                      team members in this team:
                       <div className="flex gap-2">
                         {utmbm?.TeamMembers?.length}
                         <Peoples />
                       </div>{" "}
-                    </li>
+                    </span>
                   </li>
                 </ul>
               </div>

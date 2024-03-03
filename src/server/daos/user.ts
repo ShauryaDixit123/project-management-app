@@ -79,4 +79,10 @@ export class UserDaos {
   getTeamsByAdminId(params: { adminId: string }) {
     return dbClient.team.findMany({ where: { adminId: params.adminId } });
   }
+  async updateUser(data: Prisma.UserUpdateInput) {
+    return await dbClient.user.update({
+      where: { id: data.id as string },
+      data,
+    });
+  }
 }
