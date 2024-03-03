@@ -17,6 +17,7 @@ const RenderTaskUnit = (props: {
     assignee: string;
     email: string;
   };
+  callBack?: (ele: any) => void;
 }) => {
   const task = props.task;
   const { mutate: updateTask } = api.task.updateTask.useMutation({
@@ -49,6 +50,7 @@ const RenderTaskUnit = (props: {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               stage: ele?.key as string,
             });
+            props.callBack?.(ele);
             console.log(ele, "elexzcxzc");
           }}
         >

@@ -154,12 +154,11 @@ export const taskRouter = createTRPCRouter({
       const ts = new TaskDaos();
       const us = new UserDaos();
       const mapp = new Map();
-      const res = await us.getUsersByTeamId({ id: input.id });
-      const pres = res.map(
-        async (tm) => await ts.getTasksByUserId({ id: tm.userIdId.id }),
-      );
-      const resp = await Promise.all(pres);
-      resp.flat().forEach((val) => {
+      const ress = await us.getBoardTasks({ id: input.id });
+      const flatresTsk = [
+        ...ress.map((val) => val.userIdId.TaskAssignee).flat(),
+      ];
+      flatresTsk.forEach((val) => {
         if (mapp.has(val.stage)) {
           mapp.set(val.stage, [...mapp.get(val.stage), val]);
         } else {

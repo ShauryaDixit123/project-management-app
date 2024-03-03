@@ -85,4 +85,23 @@ export class UserDaos {
       data,
     });
   }
+  getBoardTasks(params: { id: string }) {
+    return dbClient.teamMember.findMany({
+      where: {
+        teamId: params.id,
+      },
+      include: {
+        userIdId: {
+          include: {
+            TaskAssignee: {
+              include: {
+                reporterId: true,
+                assigneeId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }
