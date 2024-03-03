@@ -23,13 +23,13 @@ const Sidebar: FC<{ teamId: string }> = ({ teamId }) => {
   } = theme.useToken();
   return (
     <Sider width={200} style={{ background: colorBgContainer, height: "100%" }}>
-      {typeof window !== "undefined" && (
-        <InviteModal
-          teamId={teamId}
-          open={openInviteModal}
-          onClose={() => setOpenInviteModal(false)}
-        />
-      )}
+      {/* {typeof window !== "undefined" && ( */}
+      <InviteModal
+        teamId={teamId}
+        open={openInviteModal}
+        onClose={() => setOpenInviteModal(false)}
+      />
+      {/* )} */}
       <Menu
         mode="inline"
         theme="dark"
@@ -41,7 +41,7 @@ const Sidebar: FC<{ teamId: string }> = ({ teamId }) => {
           if (e.key === "2.2") {
             router.push(`/profile?tab=2.2&tid=${teamId}`);
           } else {
-            router.push(`/dashboard?tab=${e.key}`);
+            router.push(`/?tab=${e.key}`);
             setCurrentActive(e.key);
           }
         }}

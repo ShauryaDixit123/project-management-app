@@ -133,4 +133,22 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
+  updateUser: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().optional(),
+        email: z.string().optional(),
+        mob: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const us = new UserDaos();
+      return await us.updateUser({
+        id: input.id,
+        name: input.name,
+        email: input.email,
+        mob: input.mob,
+      });
+    }),
 });

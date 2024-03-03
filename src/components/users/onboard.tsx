@@ -8,13 +8,23 @@ import { api } from "~/utils/api";
 const OnboardModal: FC<{
   isSignUp?: boolean;
   open?: boolean;
-}> = ({ isSignUp, open }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onFinish?: (data: any) => void;
+}> = ({ isSignUp, open, onFinish }) => {
   const [signUp, setIsSignup] = useState<boolean>(isSignUp ? true : false);
   const userTkn =
     typeof window !== "undefined" ? localStorage.getItem("ut") : "";
-  const [openModal, setOpenModal] = useState<boolean>(
-    open ? true : userTkn !== null ? false : true,
-  );
+  const [openModal, setOpenModal] = useState<boolean>(open ? true : false);
+  useEffect(() => {
+    if (userTkn === null) {
+      notification.error({
+        message: "Token not found",
+        description: "Please login to continue",
+      });
+    }
+    setOpenModal(open ? true : userTkn === null);
+  }, []);
+  console.log(userTkn, "userTkn", openModal, "openModal");
   const { mutate: mutateSignUp, isLoading } = api.user.createAdmin.useMutation({
     onSuccess: (data) => {
       console.log(data, "data324234");
@@ -22,8 +32,9 @@ const OnboardModal: FC<{
         message: "User created successfully",
         description: "Welcome to the team",
       });
-      setOpenModal(false);
       localStorage.setItem("ut", data.user.token);
+      setOpenModal(false);
+      onFinish && onFinish(data);
     },
     onError: (error) => {
       console.log(error, "error");
@@ -33,18 +44,19 @@ const OnboardModal: FC<{
     onSuccess: (data) => {
       console.log(data, "data324234");
       notification.success({
-        message: "User created successfully",
+        message: "Signed in successfully",
         description: "Welcome to the team",
       });
       setOpenModal(false);
       localStorage.setItem("ut", data.user.token);
+      onFinish && onFinish(data);
     },
     onError: (error) => {
       console.log(error, "error");
     },
   });
 
-  const onFinish = async (values: {
+  const handleFinish = async (values: {
     email: string;
     password: string;
     name?: string;
@@ -73,7 +85,7 @@ const OnboardModal: FC<{
         )
       }
     >
-      <Form onFinish={onFinish} className="mt-4">
+      <Form onFinish={handleFinish} className="mt-4">
         <Flex vertical justify="space-between">
           <Form.Item
             rules={[
@@ -163,6 +175,7 @@ export const InviteModal: FC<{
         description:
           "Welcome to the team, as user to use password as 'password' while logging in!",
       });
+      onClose();
     },
     onError: (error) => {
       console.log(error, "error");
